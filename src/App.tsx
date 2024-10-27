@@ -2,62 +2,47 @@ import React from 'react';
 import { ProjectForm } from './components/ProjectForm';
 import { SiteForm } from './components/SiteForm';
 import { Results } from './components/Results';
-import { calculateSiteEstimation } from './utils/calculations';
+import { calculateSiteEstimation, determineRateAndRange } from './utils/calculations';
 import type { CalculationResults } from './types';
 
-// List of site names for the estimation process
 const SITES = ['BELLIL', 'DJEBEL M\'RAKEB'];
 
-/**
- * Main application component for administrative cost estimation.
- * Manages the flow between project data input, site-specific data input, and results display.
- */
 function App() {
-  // State to track the current step in the process
   const [step, setStep] = React.useState(1);
-
-  // State to store project data submitted from the ProjectForm
   const [projectData, setProjectData] = React.useState<{
     baseEstimate: number;
     margin: number;
     category: string;
   } | null>(null);
-
-  // State to track the current site being processed
   const [currentSite, setCurrentSite] = React.useState(0);
-
-  // State to store the calculation results for each site
   const [results, setResults] = React.useState<CalculationResults>({});
+  const [rates, setRates] = React.useState<{ study: number; monitoring: number } | null>(null);
 
-  /**
-   * Handles submission of project data from the ProjectForm.
-   * @param data - The project data including base estimate, margin, and category.
-   */
   const handleProjectSubmit = (data: {
     baseEstimate: number;
     margin: number;
     category: string;
   }) => {
     setProjectData(data);
+    const projectCost = data.baseEstimate * (1 + data.margin / 100);
+    const projectCostMillions = projectCost / 1_000_000;
+    
+    const studyRate = determineRateAndRange(projectCostMillions, data.category, 'study');
+    const monitoringRate = determineRateAndRange(projectCostMillions, data.category, 'monitoring');
+    
+    setRates({ study: studyRate, monitoring: monitoringRate });
     setStep(2);
   };
 
-  /**
-   * Handles submission of site-specific data from the SiteForm.
-   * Calculates the site estimation and updates the results state.
-   * @param data - The site-specific data including existing study status and reductions.
-   */
   const handleSiteSubmit = (data: {
     hasExistingStudy: boolean;
     reductions: { execution: number };
   }) => {
     if (!projectData) return;
 
-    // Calculate the project cost with margin
     const projectCost = projectData.baseEstimate * (1 + projectData.margin / 100);
     const projectCostMillions = projectCost / 1_000_000;
 
-    // Calculate site estimation results
     const siteResults = calculateSiteEstimation(
       projectCost,
       projectCostMillions,
@@ -65,7 +50,6 @@ function App() {
       data.reductions
     );
 
-    // Update results with the new site estimation
     setResults((prev) => ({
       ...prev,
       [SITES[currentSite]]: {
@@ -77,12 +61,44 @@ function App() {
       },
     }));
 
-    // Move to the next site or step to results display
     if (currentSite < SITES.length - 1) {
       setCurrentSite((prev) => prev + 1);
     } else {
       setStep(3);
     }
+  };
+
+  const handleBack = () => {
+    if (step === 2) {
+      if (currentSite > 0) {
+        setCurrentSite((prev) => prev - 1);
+        setResults((prev) => {
+          const newResults = { ...prev };
+          delete newResults[SITES[currentSite]];
+          return newResults;
+        });
+      } else {
+        setStep(1);
+        setCurrentSite(0);
+        setResults({});
+      }
+    } else if (step === 3) {
+      setStep(2);
+      setCurrentSite(SITES.length - 1);
+      setResults((prev) => {
+        const newResults = { ...prev };
+        delete newResults[SITES[SITES.length - 1]];
+        return newResults;
+      });
+    }
+  };
+
+  const handleReset = () => {
+    setStep(1);
+    setCurrentSite(0);
+    setResults({});
+    setProjectData(null);
+    setRates(null);
   };
 
   return (
@@ -100,9 +116,24 @@ function App() {
               onSubmit={handleSiteSubmit}
             />
           )}
-          {step === 3 && <Results results={results} />}
+          {step === 3 && projectData && rates && (
+            <Results 
+              results={results}
+              projectData={projectData}
+              rates={rates}
+              onReset={handleReset}
+            />
+          )}
 
-          {/* Indicator for the current site being processed */}
+          {step > 1 && (
+            <button
+              onClick={handleBack}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              ← Go Back
+            </button>
+          )}
+
           <div className="flex gap-2">
             {SITES.map((site, index) => (
               <div
