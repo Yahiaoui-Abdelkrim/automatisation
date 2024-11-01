@@ -12,7 +12,6 @@ function App() {
   const [step, setStep] = React.useState(0);
   const [projectName, setProjectName] = React.useState('');
   const [siteNames, setSiteNames] = React.useState<string[]>([]);
-  const [,setAreSitesSimilar] = React.useState<boolean | null>(null);
   const [projectData, setProjectData] = React.useState<{
     baseEstimate: number;
     margin: number;
@@ -32,8 +31,7 @@ function App() {
     setStep(2);
   };
 
-  const handleSimilarityCheck = (areSimilar: boolean) => {
-    setAreSitesSimilar(areSimilar);
+  const handleSimilarityCheck = () => {
     setStep(3);
   };
 
@@ -111,7 +109,6 @@ function App() {
       });
     } else if (step === 3) {
       setStep(2);
-      setAreSitesSimilar(null);
       setProjectData(null);
     } else if (step === 2) {
       setStep(1);
@@ -130,7 +127,6 @@ function App() {
     setProjectData(null);
     setRates(null);
     setSiteNames([]);
-    setAreSitesSimilar(null);
   };
 
   return (
