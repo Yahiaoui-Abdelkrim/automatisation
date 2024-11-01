@@ -5,6 +5,7 @@ import { generateDetailedNote, downloadNote } from '../utils/generateNote';
 import type { CalculationResults } from '../types';
 
 interface ResultsProps {
+  projectName: string;
   results: CalculationResults;
   projectData: {
     baseEstimate: number;
@@ -19,6 +20,7 @@ interface ResultsProps {
 }
 
 export const Results: React.FC<ResultsProps> = ({ 
+  projectName,
   results, 
   projectData, 
   rates,
@@ -31,6 +33,7 @@ export const Results: React.FC<ResultsProps> = ({
 
   const handleDownload = () => {
     const note = generateDetailedNote(
+      projectName,
       projectData.baseEstimate,
       projectData.margin,
       projectData.category,
@@ -44,9 +47,28 @@ export const Results: React.FC<ResultsProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-2xl w-full">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <FileText className="w-6 h-6 text-blue-600" />
-          <h2 className="text-xl font-semibold text-gray-800">Results</h2>
+        <div>
+          <div className="flex items-center gap-3">
+            <FileText className="w-6 h-6 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Results</h2>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">{projectName}</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download Note
+          </button>
+          <button
+            onClick={onReset}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            New Calculation
+          </button>
         </div>
       </div>
 
@@ -83,29 +105,11 @@ export const Results: React.FC<ResultsProps> = ({
           </div>
         ))}
 
-        <div className="flex items-center justify-between pt-4">
-          <div>
-            <p className="text-lg font-semibold text-gray-800">Total Global</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {formatCurrency(totalGlobal)}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Download Note
-            </button>
-            <button
-              onClick={onReset}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              <RotateCcw className="w-4 h-4" />
-              New Calculation
-            </button>
-          </div>
+        <div className="pt-4">
+          <p className="text-lg font-semibold text-gray-800">Total Global</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {formatCurrency(totalGlobal)}
+          </p>
         </div>
       </div>
     </div>
