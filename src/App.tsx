@@ -12,7 +12,7 @@ function App() {
   const [step, setStep] = React.useState(0);
   const [projectName, setProjectName] = React.useState('');
   const [siteNames, setSiteNames] = React.useState<string[]>([]);
-  const [areSitesSimilar, setAreSitesSimilar] = React.useState<boolean | null>(null);
+  const [,setAreSitesSimilar] = React.useState<boolean | null>(null);
   const [projectData, setProjectData] = React.useState<{
     baseEstimate: number;
     margin: number;
