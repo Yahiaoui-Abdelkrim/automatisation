@@ -2,7 +2,7 @@ import { CalculationResults } from '../types';
 import { formatCurrency } from './calculations';
 
 export const generateDetailedNote = (
-  projectName: string,
+  _projectName: string,
   baseEstimate: number,
   margin: number,
   category: string,
