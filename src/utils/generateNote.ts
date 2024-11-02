@@ -19,8 +19,6 @@ export const generateDetailedNote = (
                     ${new Date().toLocaleString('fr-FR')}
 =================================================================
 
-PROJET : ${projectName}
-
 DONNÉES D'ENTRÉE :
 ----------------
 Estimation de base : ${formatCurrency(baseEstimate)}
@@ -38,43 +36,71 @@ DÉTAIL DES CALCULS :
 ------------------`;
 
   for (const [site, data] of Object.entries(results)) {
-    note += `
+    note += `\n\n${site}:\n-------`;
 
-${site}:
--------
-1. Études d'exécution (45% des études):
-   Base de calcul = ${formatCurrency(projectCost)}
-   Formule = Coût × Taux études × 0.45 × (1 - Réduction)
-   Calcul = ${formatCurrency(projectCost)} × ${(studyRate).toFixed(4)} × 0.45 × (1 - ${(data.reduction_execution / 100).toFixed(2)})
-   Résultat = ${formatCurrency(data.etude_execution)}
+    // Preliminary studies
+    note += `\n1. Études préliminaires:`;
+    note += `\n   Base de calcul = ${formatCurrency(projectCost)}`;
+    if (data.reduction_preliminaries !== null) {
+      note += `\n   Formule = Coût × Taux études × 0.20 × (1 - Réduction)`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.20 × (1 - ${(data.reduction_preliminaries / 100).toFixed(2)})`;
+    } else {
+      note += `\n   Formule = Coût × Taux études × 0.20`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.20`;
+    }
+    note += `\n   Résultat = ${formatCurrency(data.preliminaries)}`;
 
-2. Assistance maître d'ouvrage (5% des études):
-   Base de calcul = ${formatCurrency(projectCost)}
-   Formule = Coût × Taux études × 0.05
-   Calcul = ${formatCurrency(projectCost)} × ${(studyRate).toFixed(4)} × 0.05
-   Résultat = ${formatCurrency(data.assistance)}
+    // Preliminary project studies
+    note += `\n\n2. Études d'avant-projet:`;
+    note += `\n   Base de calcul = ${formatCurrency(projectCost)}`;
+    if (data.reduction_preliminary !== null) {
+      note += `\n   Formule = Coût × Taux études × 0.30 × (1 - Réduction)`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.30 × (1 - ${(data.reduction_preliminary / 100).toFixed(2)})`;
+    } else {
+      note += `\n   Formule = Coût × Taux études × 0.30`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.30`;
+    }
+    note += `\n   Résultat = ${formatCurrency(data.preliminary)}`;
 
-3. Suivi des travaux:
-   Base de calcul = ${formatCurrency(projectCost)}
-   Formule = Coût × Taux suivi
-   Calcul = ${formatCurrency(projectCost)} × ${(monitoringRate).toFixed(4)}
-   Résultat = ${formatCurrency(data.suivi)}
+    // Execution studies
+    note += `\n\n3. Études d'exécution:`;
+    note += `\n   Base de calcul = ${formatCurrency(projectCost)}`;
+    if (data.reduction_execution !== null) {
+      note += `\n   Formule = Coût × Taux études × 0.45 × (1 - Réduction)`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.45 × (1 - ${(data.reduction_execution / 100).toFixed(2)})`;
+    } else {
+      note += `\n   Formule = Coût × Taux études × 0.45`;
+      note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.45`;
+    }
+    note += `\n   Résultat = ${formatCurrency(data.execution)}`;
 
-Total ${site} = ${formatCurrency(data.etude_execution)} + ${formatCurrency(data.assistance)} + ${formatCurrency(data.suivi)}
-            = ${formatCurrency(data.total)}`;
+    // Assistance
+    note += `\n\n4. Assistance maître d'ouvrage:`;
+    note += `\n   Base de calcul = ${formatCurrency(projectCost)}`;
+    note += `\n   Formule = Coût × Taux études × 0.05`;
+    note += `\n   Calcul = ${formatCurrency(projectCost)} × ${studyRate.toFixed(4)} × 0.05`;
+    note += `\n   Résultat = ${formatCurrency(data.assistance)}`;
+
+    // Monitoring
+    note += `\n\n5. Suivi des travaux:`;
+    note += `\n   Base de calcul = ${formatCurrency(projectCost)}`;
+    note += `\n   Formule = Coût × Taux suivi`;
+    note += `\n   Calcul = ${formatCurrency(projectCost)} × ${monitoringRate.toFixed(4)}`;
+    note += `\n   Résultat = ${formatCurrency(data.suivi)}`;
+
+    note += `\n\nTotal ${site} = ${formatCurrency(data.preliminaries)} + ${formatCurrency(data.preliminary)} + ${formatCurrency(data.execution)} + ${formatCurrency(data.assistance)} + ${formatCurrency(data.suivi)}`;
+    note += `\n            = ${formatCurrency(data.total)}`;
   }
 
   const totalGlobal = Object.values(results).reduce((sum, site) => sum + site.total, 0);
-  note += `
-
-=================================================================
-TOTAL GLOBAL : ${formatCurrency(totalGlobal)}
-=================================================================`;
+  note += `\n\n=================================================================`;
+  note += `\nTOTAL GLOBAL : ${formatCurrency(totalGlobal)}`;
+  note += `\n=================================================================`;
 
   return note;
 };
 
-export const downloadNote = (content: string) => {
+export const downloadNote = (content: string): void => {
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

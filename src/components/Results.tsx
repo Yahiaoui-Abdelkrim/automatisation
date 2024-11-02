@@ -19,12 +19,12 @@ interface ResultsProps {
   onReset: () => void;
 }
 
-export const Results: React.FC<ResultsProps> = ({ 
+export const Results: React.FC<ResultsProps> = ({
   projectName,
-  results, 
-  projectData, 
+  results,
+  projectData,
   rates,
-  onReset 
+  onReset,
 }) => {
   const totalGlobal = Object.values(results).reduce(
     (sum, site) => sum + site.total,
@@ -78,9 +78,21 @@ export const Results: React.FC<ResultsProps> = ({
             <h3 className="text-lg font-medium text-gray-800 mb-3">{site}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
+                <p className="text-sm text-gray-600">Études préliminaires</p>
+                <p className="text-base font-medium">
+                  {formatCurrency(data.preliminaries)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Études d'avant-projet</p>
+                <p className="text-base font-medium">
+                  {formatCurrency(data.preliminary)}
+                </p>
+              </div>
+              <div>
                 <p className="text-sm text-gray-600">Études d'exécution</p>
                 <p className="text-base font-medium">
-                  {formatCurrency(data.etude_execution)}
+                  {formatCurrency(data.execution)}
                 </p>
               </div>
               <div>

@@ -6,34 +6,35 @@ interface SiteFormProps {
   onSubmit: (data: {
     hasExistingStudy: boolean;
     reductions: {
-      preliminaries: number;
-      preliminary: number;
-      execution: number;
+      preliminaries: number | null;
+      preliminary: number | null;
+      execution: number | null;
     };
   }) => void;
 }
 
-/**
- * Form component for entering site-specific data.
- * Allows users to specify if a previous study exists and input reduction percentages.
- */
 export const SiteForm: React.FC<SiteFormProps> = ({ siteName, onSubmit }) => {
   const [hasExistingStudy, setHasExistingStudy] = React.useState(false);
+  const [availableStudies, setAvailableStudies] = React.useState({
+    preliminaries: false,
+    preliminary: false,
+    execution: false,
+  });
   const [reductions, setReductions] = React.useState({
-    preliminaries: 0,
-    preliminary: 0,
-    execution: 0,
+    preliminaries: null as number | null,
+    preliminary: null as number | null,
+    execution: null as number | null,
   });
 
-  /**
-   * Handles form submission and passes data to the parent component.
-   * @param e - Form event.
-   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
       hasExistingStudy,
-      reductions,
+      reductions: {
+        preliminaries: availableStudies.preliminaries ? (reductions.preliminaries ?? 100) : null,
+        preliminary: availableStudies.preliminary ? (reductions.preliminary ?? 100) : null,
+        execution: availableStudies.execution ? (reductions.execution ?? 100) : null,
+      },
     });
   };
 
@@ -57,41 +58,73 @@ export const SiteForm: React.FC<SiteFormProps> = ({ siteName, onSubmit }) => {
               className="rounded text-blue-600 focus:ring-blue-500"
             />
             <span className="text-sm text-gray-700">
-              Previous study exists for this site
+              Existe-t-il des études réalisées dans un autre marché?
             </span>
           </label>
         </div>
 
         {hasExistingStudy && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-gray-700">
-              Reduction Percentages
-            </h3>
-            {Object.entries(reductions).map(([key, value]) => (
-              <div key={key}>
-                <label
-                  htmlFor={key}
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  {key.charAt(0).toUpperCase() + key.slice(1)} (%)
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-700">Études disponibles</h3>
+            <div className="space-y-2">
+              {Object.entries({
+                preliminaries: 'Études préliminaires',
+                preliminary: 'Études d\'avant-projet',
+                execution: 'Études d\'exécution',
+              }).map(([key, label]) => (
+                <label key={key} className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={availableStudies[key as keyof typeof availableStudies]}
+                    onChange={(e) =>
+                      setAvailableStudies((prev) => ({
+                        ...prev,
+                        [key]: e.target.checked,
+                      }))
+                    }
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700">{label}</span>
                 </label>
-                <input
-                  type="number"
-                  id={key}
-                  value={value}
-                  onChange={(e) =>
-                    setReductions((prev) => ({
-                      ...prev,
-                      [key]: Number(e.target.value),
-                    }))
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                />
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-700">
+                Pourcentages de réduction
+              </h3>
+              {Object.entries({
+                preliminaries: 'Études préliminaires',
+                preliminary: 'Études d\'avant-projet',
+                execution: 'Études d\'exécution',
+              }).map(([key, label]) => (
+                availableStudies[key as keyof typeof availableStudies] && (
+                  <div key={key}>
+                    <label
+                      htmlFor={key}
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      {label} (%)
+                    </label>
+                    <input
+                      type="number"
+                      id={key}
+                      value={reductions[key as keyof typeof reductions] ?? 100}
+                      onChange={(e) =>
+                        setReductions((prev) => ({
+                          ...prev,
+                          [key]: e.target.value ? Number(e.target.value) : 100,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                    />
+                  </div>
+                )
+              ))}
+            </div>
           </div>
         )}
 
@@ -99,7 +132,7 @@ export const SiteForm: React.FC<SiteFormProps> = ({ siteName, onSubmit }) => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
         >
-          Calculate Site
+          Calculer le site
         </button>
       </div>
     </form>

@@ -12,6 +12,7 @@ function App() {
   const [step, setStep] = React.useState(0);
   const [projectName, setProjectName] = React.useState('');
   const [siteNames, setSiteNames] = React.useState<string[]>([]);
+  const [, setAreSitesSimilar] = React.useState<boolean | null>(null);
   const [projectData, setProjectData] = React.useState<{
     baseEstimate: number;
     margin: number;
@@ -28,10 +29,16 @@ function App() {
 
   const handleSiteNamesSubmit = (names: string[]) => {
     setSiteNames(names);
-    setStep(2);
+    // Skip similarity check if there's only one site
+    if (names.length === 1) {
+      setStep(3);
+    } else {
+      setStep(2);
+    }
   };
 
-  const handleSimilarityCheck = () => {
+  const handleSimilarityCheck = (areSimilar: boolean) => {
+    setAreSitesSimilar(areSimilar);
     setStep(3);
   };
 
@@ -53,7 +60,11 @@ function App() {
 
   const handleSiteSubmit = (data: {
     hasExistingStudy: boolean;
-    reductions: { execution: number };
+    reductions: {
+      preliminaries: number | null;
+      preliminary: number | null;
+      execution: number | null;
+    };
   }) => {
     if (!projectData) return;
 
@@ -70,11 +81,11 @@ function App() {
     setResults((prev) => ({
       ...prev,
       [siteNames[currentSite]]: {
-        etude_execution: siteResults.executionStudy,
-        assistance: siteResults.assistance,
-        suivi: siteResults.monitoring,
-        total: siteResults.total,
+        ...siteResults,
+        reduction_preliminaries: data.reductions.preliminaries,
+        reduction_preliminary: data.reductions.preliminary,
         reduction_execution: data.reductions.execution,
+        suivi: siteResults.monitoring,
       },
     }));
 
@@ -108,7 +119,8 @@ function App() {
         return newResults;
       });
     } else if (step === 3) {
-      setStep(2);
+      setStep(siteNames.length > 1 ? 2 : 1);
+      setAreSitesSimilar(null);
       setProjectData(null);
     } else if (step === 2) {
       setStep(1);
@@ -127,14 +139,22 @@ function App() {
     setProjectData(null);
     setRates(null);
     setSiteNames([]);
+    setAreSitesSimilar(null);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          Estimation des Coûts Administratifs
+          Estimation Administrative
         </h1>
+
+        {/* Display project name if it exists */}
+        {projectName && (
+          <p className="text-center text-gray-700 mb-4">
+            Project: {projectName}
+          </p>
+        )}
 
         <div className="flex flex-col items-center space-y-8">
           {step === 0 && (
@@ -144,7 +164,9 @@ function App() {
             />
           )}
           {step === 1 && <SiteNamesForm onSubmit={handleSiteNamesSubmit} />}
-          {step === 2 && <SimilarityCheck onSubmit={handleSimilarityCheck} />}
+          {step === 2 && siteNames.length > 1 && (
+            <SimilarityCheck onSubmit={handleSimilarityCheck} />
+          )}
           {step === 3 && <ProjectForm onSubmit={handleProjectSubmit} />}
           {step === 4 && (
             <SiteForm

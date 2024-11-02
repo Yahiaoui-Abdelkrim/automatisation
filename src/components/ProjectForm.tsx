@@ -9,19 +9,11 @@ interface ProjectFormProps {
   }) => void;
 }
 
-/**
- * Form component for entering project data.
- * Collects base estimate, margin, and category information.
- */
 export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
   const [baseEstimate, setBaseEstimate] = React.useState('');
   const [margin, setMargin] = React.useState('20');
   const [category, setCategory] = React.useState('A');
 
-  /**
-   * Handles form submission and passes data to the parent component.
-   * @param e - Form event.
-   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
@@ -39,7 +31,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
       <div className="flex items-center gap-3 mb-6">
         <Calculator className="w-6 h-6 text-blue-600" />
         <h2 className="text-xl font-semibold text-gray-800">
-          Project Information
+          Informations du projet
         </h2>
       </div>
 
@@ -49,7 +41,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
             htmlFor="baseEstimate"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Base Estimate (DA)
+            Estimation de base (DA)
           </label>
           <input
             type="number"
@@ -68,7 +60,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
             htmlFor="margin"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Margin (%)
+            Marge (%)
           </label>
           <input
             type="number"
@@ -88,7 +80,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
             htmlFor="category"
             className="block text-sm font-medium text-gray-700 mb-1"
           >
-            Project Category
+            Catégorie du projet
           </label>
           <select
             id="category"
@@ -99,7 +91,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
           >
             {['A', 'B', 'C', 'D', 'E'].map((cat) => (
               <option key={cat} value={cat}>
-                Category {cat}
+                Catégorie {cat}
               </option>
             ))}
           </select>
@@ -109,7 +101,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ onSubmit }) => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
         >
-          Calculate
+          Calculer
         </button>
       </div>
     </form>
